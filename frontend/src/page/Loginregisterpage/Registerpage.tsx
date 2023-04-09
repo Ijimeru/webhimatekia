@@ -1,25 +1,46 @@
 import React, { useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { CheckPassword } from "../../utils/CheckPassword";
 
 export default function Registerpage() {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const passwordConfirmationRef = useRef<HTMLInputElement | null>(null);
-  const [passwordErrorList, setPasswordErrorList] = useState<string[]>([]);
-  function handleSubmit(e: any): void {
+  const [passwordErrorList, setPasswordErrorList] = useState<string[] | boolean>([]);
+  const [passwordConfError, setPasswordConfError] = useState(false);
+  const [response, setResponse] = useState("");
+  let navigate = useNavigate();
+  async function handleSubmit(e: any): Promise<void> {
     e.preventDefault();
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
-    const passwordConf = passwordConfirmationRef.current?.value;
     if (CheckPassword(password!)) {
       setPasswordErrorList(CheckPassword(password!));
       return;
     }
-
-    console.log({ email, password, passwordConf });
+    if (passwordConfError) {
+      return;
+    }
+    const response = await fetch("/api/register-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+    console.log(response);
+    if (response.status == 406) setResponse("Maaf, email sudah digunakan");
+    else {
+      setResponse("Akun telah dibuat");
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    }
   }
-  const [passwordConfError, setPasswordConfError] = useState(false);
+
   const handleConfPass = () => {
     const password = passwordRef.current?.value;
     const passwordConf = passwordConfirmationRef.current?.value;
@@ -63,11 +84,12 @@ export default function Registerpage() {
                   name="password"
                   id="password"
                   ref={passwordRef}
+                  onKeyUp={() => handleConfPass()}
                   placeholder="••••••••"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   required={true}
                 />
-                {passwordErrorList && <ul>{passwordErrorList && passwordErrorList.map((list) => <li key={list}>{list}</li>)}</ul>}
+                {passwordErrorList && <ul>{Array.isArray(passwordErrorList) && passwordErrorList.map((list) => <li key={list}>{list}</li>)}</ul>}
               </div>
               <div>
                 <label htmlFor="confirm-password" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -83,7 +105,7 @@ export default function Registerpage() {
                   required={true}
                   onKeyUp={() => handleConfPass()}
                 />
-                <p className={`text-red-800 ${passwordConfError ? "visible" : "invisible"}`}> Password tidak sesuai</p>
+                <p className={`text-red-800 ${passwordConfError ? "block" : "hidden"}`}> Password tidak sesuai</p>
               </div>
               <div className="flex items-start">
                 <div className="flex items-center h-5">
@@ -92,7 +114,7 @@ export default function Registerpage() {
                     aria-describedby="terms"
                     type="checkbox"
                     className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800"
-                    required={true}
+                    required={false}
                   />
                 </div>
                 <div className="ml-3 text-sm">
@@ -101,9 +123,13 @@ export default function Registerpage() {
                   </label>
                 </div>
               </div>
+              {response && <p className="text-center w-full">{response}</p>}
               <button
                 type="submit"
-                className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+                disabled={passwordConfError}
+                className={`w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800
+                ${passwordConfError && "cursor-not-allowed"}
+                `}
               >
                 Buat Akun
               </button>

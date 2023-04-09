@@ -1,6 +1,5 @@
-export const CheckPassword = (password: string): string[] => {
+export const CheckPassword = (password: string): string[] | boolean => {
   const errorList: string[] = [];
-  console.log({ password });
   let lower = new RegExp("^(?=.*[a-z])");
   let upper = new RegExp("^(?=.*[A-Z])");
   let numeric = new RegExp("^(?=.*[0-9])");
@@ -22,5 +21,9 @@ export const CheckPassword = (password: string): string[] => {
   if (!longer.test(password)) {
     errorList.push("Password minimal 8 karakter atau lebih");
   }
-  return errorList;
+  if (errorList.length > 0) {
+    return errorList;
+  } else {
+    return false;
+  }
 };

@@ -65,8 +65,7 @@ export default function NavLink() {
                 className="self-center cursor-pointer text-lg"
                 onMouseEnter={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))}
                 onMouseLeave={() => {
-                  const interval = setInterval(() => (subLink !== list.name ? setSubLink("") : setSubLink("list.name")), 300);
-                  clearInterval(interval);
+                  setTimeout(() => (subLink !== list.name ? setSubLink("") : setSubLink("list.name")), 300);
                 }}
               />
             )}
