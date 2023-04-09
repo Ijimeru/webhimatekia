@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'frontend.apps.FrontendConfig',
+    'rest_framework',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -49,8 +51,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
-
+CORS_ALLOW_ALL_ORIGINS = True
 ROOT_URLCONF = 'myapp.urls'
 
 TEMPLATES = [
@@ -123,3 +126,12 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+SIMPLE_JWT = {
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.MyTokenObtainPairSerializer",
+}
+AUTH_USER_MODEL = 'api.User'

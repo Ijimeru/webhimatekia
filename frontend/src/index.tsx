@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./index.css";
-import Navbar from "./components/navbar/Navbar";
 import Homepage from "./page/Homepage/Homepage";
 import Adminpage from "./page/Adminpage/Adminpage";
 import Loginpage from "./page/Loginregisterpage/Loginpage";
 import Registerpage from "./page/Loginregisterpage/Registerpage";
+import Navbar from "./components/Navbar/Navbar";
 const App = () => {
   return (
     <>
