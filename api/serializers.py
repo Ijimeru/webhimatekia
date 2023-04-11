@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     class Meta:
         model = User
-        fields = ['username','email', 'password']
+        fields = ['email','username', 'password']
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field=User.EMAIL_FIELD
@@ -20,6 +20,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super().get_token(user)
 
         # Add custom claims
-        token['email'] = user.email
-        token['password'] = user.password
+        token['username'] = user.username
+        token['is_staff'] = user.is_staff
         return token

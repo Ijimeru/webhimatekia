@@ -49,10 +49,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const data = await response.json();
     if (response.status === 200) {
       setAuthTokens(data);
-      setUser(jwt_decode(data.access));
       localStorage.setItem("authTokens", JSON.stringify(data));
       setLoginMessage({ status: "berhasil", message: "Anda berhasil login" });
       setTimeout(() => {
+        setUser(jwt_decode(data.access));
+        setLoginMessage(null);
         navigate("/");
       }, 3000);
     } else if (response.status === 401) {

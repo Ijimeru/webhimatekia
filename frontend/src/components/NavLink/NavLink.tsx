@@ -71,7 +71,7 @@ export default function NavLink() {
             )}
             {list.child && (
               <div
-                className={`absolute transition-all hover:opacity-100 hover:z-10 w-full top-10 delay-300 bg-white border border-gray-100 ${subLink === list.name ? "opacity-100" : "opacity-0 -z-50"}`}
+                className={`absolute transition-all hover:opacity-100 hover:z-10 w-full top-10 bg-white border border-gray-100 ${subLink === list.name ? "opacity-100" : "opacity-0 -z-50"}`}
                 onMouseLeave={() => (subLink !== list.name ? setSubLink("") : setSubLink("list.name"))}
               >
                 <div className="w-3 h-3 rotate-45 absolute right-0 top-[-0.3rem] border-t border-l border-gray-100 z-50"></div>
