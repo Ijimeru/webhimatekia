@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { GrClose } from "react-icons/gr";
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { AuthContext } from "../../context/AuthContext";
 export default function NavLink() {
   const NavList: {
@@ -58,6 +58,7 @@ export default function NavLink() {
   ];
   const { user, logout } = useContext(AuthContext);
   const [active, setActive] = useState(false);
+  const [subActive, setSubActive] = useState("");
   const [subLink, setSubLink] = useState("");
   return (
     <>
@@ -98,12 +99,22 @@ export default function NavLink() {
         </ul>
         {/* Mobile */}
         <ul className={`flex flex-col fixed z-10 top-0 left-0 right-[55%] md:hidden bg-black text-white bottom-0 overflow-auto text-xl gap-y-10 transition-transform ${active ? "" : "-translate-x-96"}`}>
-          <div></div>
           {NavList.map((list, index) => (
             <li key={index} className="block relative border-b-2 justify-between">
               <div className="flex justify-between">
                 <Link to={list.url}>{list.name}</Link>
-                {list.child && <AiOutlinePlus className="cursor-pointer text-lg" onClick={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))} />}
+                {list.child && subLink == list.name ? (
+                  <AiOutlineMinus className="cursor-pointer text-lg" onClick={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))} />
+                ) : (
+                  list.child && (
+                    <AiOutlinePlus
+                      className="cursor-pointer text-lg"
+                      onClick={() => {
+                        subLink !== list.name ? setSubLink(list.name) : setSubLink("");
+                      }}
+                    />
+                  )
+                )}
               </div>
               {list.child && (
                 <div className={`block transition-all w-full top-10 `}>
@@ -122,6 +133,12 @@ export default function NavLink() {
               )}
             </li>
           ))}
+          <button
+            onClick={logout}
+            className="px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 absolute bottom-0"
+          >
+            logout
+          </button>
         </ul>
       </div>
       <div className="flex gap-x-2">
@@ -148,26 +165,26 @@ export default function NavLink() {
           ) : (
             <button
               onClick={logout}
-              className="px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              className="px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 hidden md:block"
             >
               logout
             </button>
           )}
         </div>
         {active ? (
-          <>
-            <GrClose className="block md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)} />{" "}
+          <button>
+            <GrClose className="inline-block md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)} />{" "}
             <span className="md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)}>
               Menu
             </span>
-          </>
+          </button>
         ) : (
-          <>
-            <GiHamburgerMenu className="block md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)} />{" "}
+          <button>
+            <GiHamburgerMenu className="inline-block md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)} />{" "}
             <span className="md:hidden self-center cursor-pointer" onClick={() => setActive((prev) => !prev)}>
               Menu
             </span>
-          </>
+          </button>
         )}
       </div>
     </>
