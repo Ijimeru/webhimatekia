@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { GrClose } from "react-icons/gr";
+import { AiOutlinePlus } from "react-icons/ai";
 import { AuthContext } from "../../context/AuthContext";
 export default function NavLink() {
   const NavList: {
@@ -61,6 +62,7 @@ export default function NavLink() {
   return (
     <>
       <div className="border-cyan-100 ">
+        {/* Desktop */}
         <ul className="gap-x-3 hidden md:flex md:flex-row">
           {NavList.map((list, index) => (
             <li key={index} className="flex flex-row relative">
@@ -94,34 +96,28 @@ export default function NavLink() {
             </li>
           ))}
         </ul>
-        <ul className="flex flex-col fixed z-10 top-0 left-0 right-[55%] md:hidden bg-black text-white bottom-0 overflow-scroll text-xl gap-y-10">
+        {/* Mobile */}
+        <ul className={`flex flex-col fixed z-10 top-0 left-0 right-[55%] md:hidden bg-black text-white bottom-0 overflow-auto text-xl gap-y-10 transition-transform ${active ? "" : "-translate-x-96"}`}>
+          <div></div>
           {NavList.map((list, index) => (
-            <li key={index} className="flex relative border-b-2">
-              <Link to={list.url}>{list.name}</Link>
+            <li key={index} className="block relative border-b-2 justify-between">
+              <div className="flex justify-between">
+                <Link to={list.url}>{list.name}</Link>
+                {list.child && <AiOutlinePlus className="cursor-pointer text-lg" onClick={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))} />}
+              </div>
               {list.child && (
-                <RiArrowDropDownLine
-                  className="self-center cursor-pointer text-lg"
-                  onMouseEnter={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))}
-                  onMouseLeave={() => {
-                    setTimeout(() => (subLink !== list.name ? setSubLink("") : setSubLink("list.name")), 300);
-                  }}
-                />
-              )}
-              {list.child && (
-                <div
-                  className={`absolute transition-all hover:opacity-100 hover:z-10 w-full top-10 bg-white border border-gray-100 ${subLink === list.name ? "opacity-100" : "opacity-0 -z-50"}`}
-                  onMouseLeave={() => (subLink !== list.name ? setSubLink("") : setSubLink("list.name"))}
-                >
-                  <div className="w-3 h-3 rotate-45 absolute right-0 top-[-0.3rem] border-t border-l border-gray-100 z-50"></div>
-                  <ul>
-                    {list.child.map((i, j) => (
-                      <li key={j}>
-                        <Link key={j} to={i.url}>
-                          {i.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+                <div className={`block transition-all w-full top-10 `}>
+                  {subLink == list.name ? (
+                    <ul>
+                      {list.child.map((i, j) => (
+                        <li key={j}>
+                          <Link key={j} to={i.url}>
+                            {i.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               )}
             </li>
