@@ -1,10 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { GrClose } from "react-icons/gr";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { AuthContext } from "../../context/AuthContext";
+import { useWindowSize } from "../../utils/useWindowSize";
 export default function NavLink() {
   const NavList: {
     name: string;
@@ -58,8 +59,14 @@ export default function NavLink() {
   ];
   const { user, logout } = useContext(AuthContext);
   const [active, setActive] = useState(false);
-  const [subActive, setSubActive] = useState("");
   const [subLink, setSubLink] = useState("");
+  const windowWidth = useWindowSize();
+  useEffect(() => {
+    if (windowWidth.width! > 768) {
+      setActive(false);
+    }
+  }, [windowWidth.width]);
+  useEffect;
   return (
     <>
       <div className="border-cyan-100 ">
