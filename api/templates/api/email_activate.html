@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style></style>
+  </head>
+  <body style="display: flex; justify-content: center; align-items: center; height: 100vh; color: rgb(54, 73, 98); text-align: center">
+    <div class="container" style="width: 400px; background-color: rgb(241 245 249); border-width: 1px; border-color: gray; display: flex; flex-direction: column; align-items: center; paddding: 0.75rem; border-radius: 6px; column-gap: 1rem">
+      <h2>ADMIN HIMATEKIA</h2>
+      <img src="https://www.shutterstock.com/image-vector/handshake-business-partners-successful-deal-260nw-1136215136.jpg" alt="Orang salaman" />
+      <p style="font-weight: 600">Hi {{ user.username }}, pencet tombol dibawah untuk lakukan verifikasi</p>
+      <a href="http://{{domain}}{% url 'activate' uidb64=uid token=token %}" style="display: block; background-color: rgb(29, 78, 216); color: white; padding: 0.75rem; border-radius: 6px; text-decoration: none">Activate</a>
+      {% comment %} href="http://{{domain}}{% url 'activate' uidb64=uid token=token %}" {% endcomment %}
+    </div>
+  </body>
+</html>

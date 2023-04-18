@@ -109,7 +109,9 @@ export default function NavLink() {
           {NavList.map((list, index) => (
             <li key={index} className="block relative border-b-2 justify-between">
               <div className="flex justify-between">
-                <Link to={list.url}>{list.name}</Link>
+                <Link to={list.url} onClick={() => setActive(false)}>
+                  {list.name}
+                </Link>
                 {list.child && subLink == list.name ? (
                   <AiOutlineMinus className="cursor-pointer text-lg" onClick={() => (subLink !== list.name ? setSubLink(list.name) : setSubLink(""))} />
                 ) : (
@@ -129,7 +131,7 @@ export default function NavLink() {
                     <ul>
                       {list.child.map((i, j) => (
                         <li key={j}>
-                          <Link key={j} to={i.url}>
+                          <Link key={j} to={i.url} onClick={() => setActive(false)}>
                             {i.name}
                           </Link>
                         </li>
@@ -140,12 +142,38 @@ export default function NavLink() {
               )}
             </li>
           ))}
-          <button
-            onClick={logout}
-            className="px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 absolute bottom-0"
-          >
-            logout
-          </button>
+          {user ? (
+            <button
+              onClick={() => {
+                setActive(false);
+                logout;
+              }}
+              className="px-3 py-2 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 absolute bottom-0"
+            >
+              logout
+            </button>
+          ) : (
+            <>
+              {location.pathname !== "/login" && (
+                <Link
+                  to="/login"
+                  onClick={() => setActive(false)}
+                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Login
+                </Link>
+              )}
+              {location.pathname !== "/register" && (
+                <Link
+                  to="/register"
+                  onClick={() => setActive(false)}
+                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
+                  Register
+                </Link>
+              )}
+            </>
+          )}
         </ul>
       </div>
       <div className="flex gap-x-2">
@@ -155,7 +183,7 @@ export default function NavLink() {
               {location.pathname !== "/login" && (
                 <Link
                   to="/login"
-                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 hidden md:block"
                 >
                   Login
                 </Link>
@@ -163,7 +191,7 @@ export default function NavLink() {
               {location.pathname !== "/register" && (
                 <Link
                   to="/register"
-                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                  className="px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 hidden md:block"
                 >
                   Register
                 </Link>

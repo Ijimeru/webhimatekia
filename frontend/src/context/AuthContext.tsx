@@ -38,6 +38,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => (localStorage.getItem("authTokens") ? jwt_decode(localStorage.getItem("authTokens")!) : null));
   const [authTokens, setAuthTokens] = useState<AuthTokensType | null>(() => (localStorage.getItem("authTokens") ? JSON.parse(localStorage.getItem("authTokens")!) : null));
   const [loginMessage, setLoginMessage] = useState<{ status: string; message: string } | null>(null);
+
+  // Fungsi Login
   const login = async (email: string, password: string): Promise<string | void> => {
     const response = await fetch("/api/token/", {
       method: "POST",
@@ -58,6 +60,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }, 3000);
     } else if (response.status === 401) {
       setLoginMessage({ status: "gagal", message: "Anda gagal login" });
+    } else if (response.status === 400) {
+      setLoginMessage({ status: "belum terverifikasi", message: data.non_field_errors[0] });
     }
   };
 
