@@ -19,6 +19,8 @@ interface AuthContextType {
   authTokens: AuthTokensType | null;
   loginMessage: MessageType | null;
   login: (email: string, password: string) => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setAuthTokens: React.Dispatch<React.SetStateAction<AuthTokensType | null>>;
   logout: () => void;
 }
 
@@ -26,6 +28,8 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   authTokens: null,
   loginMessage: null,
+  setUser: () => {},
+  setAuthTokens: () => {},
   login: (email: string, password: string) => {},
   logout: () => {},
 });
@@ -78,14 +82,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setAuthTokens(null);
     localStorage.removeItem("authTokens");
   };
-
+  console.log(user);
   return (
     <AuthContext.Provider
       value={{
         user,
         authTokens,
         loginMessage,
+        setUser,
         login,
+        setAuthTokens,
         logout,
       }}
     >
