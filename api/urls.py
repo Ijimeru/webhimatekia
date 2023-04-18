@@ -12,5 +12,5 @@ urlpatterns = [
     path('book/', views.BookApiView.as_view({'get': 'list'})),
     path('activate-user/<uidb64>/<token>',
          views.activate_user, name="activate"),
-    path('activate/', views.activate)
+    path('resend-email/', views.resend_email)
 ]

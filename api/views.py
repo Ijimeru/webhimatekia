@@ -17,11 +17,8 @@ from django.template.loader import render_to_string
 from .utils import generate_token
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
-
-
-def activate(request):
-    return render(request, 'api/email_activate.html')
 
 
 class EmailThread(threading.Thread):
@@ -46,6 +43,19 @@ def send_action_email(user, request):
         from_email=settings.EMAIL_FROM_USER, to=[user.email])
     email.attach_alternative(email_body, 'text/html')
     EmailThread(email).start()
+
+
+@api_view(['POST'])
+def resend_email(request):
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(email=request.data['email'])
+            print("user")
+            send_action_email(user, request)
+            return Response({"message": "Verifikasi email berhasil di kirim"}, status=HTTP_200_OK)
+        except Exception as e:
+            return Response({"message": "Email tidak ditemukan"}, HTTP_400_BAD_REQUEST)
+    return Response({"message": "gege"})
 
 
 def activate_user(request, uidb64, token):
