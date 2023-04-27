@@ -1,14 +1,16 @@
 import React, { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import useAxios from "../utils/useAxios";
 
 interface User {
   username: string;
   email: string;
+  nim: string;
 }
 interface AuthTokensType {
-  access: string;
-  refresh: string;
+  access: string | undefined;
+  refresh: string | undefined;
 }
 interface MessageType {
   status: string;
@@ -38,6 +40,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const axios = useAxios();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => (localStorage.getItem("authTokens") ? jwt_decode(localStorage.getItem("authTokens")!) : null));
   const [authTokens, setAuthTokens] = useState<AuthTokensType | null>(() => (localStorage.getItem("authTokens") ? JSON.parse(localStorage.getItem("authTokens")!) : null));
@@ -61,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(jwt_decode(data.access));
         setLoginMessage(null);
         navigate("/");
-      }, 3000);
+      }, 0);
     } else if (response.status === 401) {
       setLoginMessage({ status: "gagal", message: "Anda gagal login" });
     } else if (response.status === 400) {
@@ -81,8 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     setAuthTokens(null);
     localStorage.removeItem("authTokens");
+    navigate("/login");
   };
-  console.log(user);
   return (
     <AuthContext.Provider
       value={{

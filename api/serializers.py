@@ -18,6 +18,25 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password']
 
 
+class PostSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field="username",
+        many=False,
+        read_only=True
+    )
+
+    class Meta:
+        model = Post
+        fields = '__all__'
+        ordering = '-created_at'
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['name', 'meta_category']
+
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = User.EMAIL_FIELD
 
@@ -31,11 +50,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     @classmethod
     def get_token(cls, user):
+
         token = super().get_token(user)
 
         # Add custom claims
         token['username'] = user.username
         token['is_staff'] = user.is_staff
+        token['email'] = user.email
+        token['nim'] = user.nim
         return token
 
 

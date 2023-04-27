@@ -4,14 +4,14 @@ import jwt_decode from "jwt-decode";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
-const baseURL = "http://127.0.0.1:8000";
+const baseURL = "http://127.0.0.1:8000/api";
 interface User {
   username: string;
   email: string;
   exp: number;
 }
 const useAxios = () => {
-  const { authTokens, setUser, setAuthTokens } = useContext(AuthContext);
+  const { authTokens, setUser, setAuthTokens, logout } = useContext(AuthContext);
 
   const axiosInstance = axios.create({
     baseURL,
@@ -19,17 +19,24 @@ const useAxios = () => {
   });
 
   axiosInstance.interceptors.request.use(async (req) => {
-    const user: User | null = jwt_decode(authTokens!.access);
+    if (!localStorage.getItem("authTokens")) {
+      logout();
+      return req;
+    }
+    const user: User = jwt_decode(JSON.parse(localStorage.getItem("authTokens")!).access);
     const isExpired = dayjs.unix(user!.exp).diff(dayjs()) < 1;
-    if (!isExpired) return req;
+    if (!isExpired) {
+      req.headers.Authorization = `Bearer ${JSON.parse(localStorage.getItem("authTokens")!).access}`;
+      return req;
+    }
 
-    const response = await axios.post(`${baseURL}/api/token/refresh`, {
-      refresh: authTokens?.refresh,
+    const response = await axios.post(`${baseURL}/token/refresh/`, {
+      refresh: JSON.parse(localStorage.getItem("authTokens")!).refresh,
     });
     localStorage.setItem("authTokens", JSON.stringify(response.data));
     setAuthTokens(response.data);
-    setUser(jwt_decode(response.data.acces));
-    req.headers.Authorization = `Bearer ${authTokens?.access}`;
+    setUser(jwt_decode(response.data.access));
+    req.headers.Authorization = `Bearer ${response.data.access}`;
     return req;
   });
   return axiosInstance;

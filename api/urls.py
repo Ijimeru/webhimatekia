@@ -8,9 +8,15 @@ urlpatterns = [
     path('token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/blacklist/', TokenBlacklistView.as_view(), name='token_blacklist'),
-    path('register-user', views.registerUser),
+    path('register-user/', views.registerUser),
     path('book/', views.BookApiView.as_view({'get': 'list'})),
     path('activate-user/<uidb64>/<token>',
          views.activate_user, name="activate"),
-    path('resend-email/', views.resend_email)
+    path('resend-email/', views.resend_email),
+    path('posts/', views.getPosts),
+    path('posts/<int:id>/', views.getPosts),
+    path('posts/<int:id>/delete', views.getPosts),
+    path('posts/create', views.getPosts),
+    path('posts/<int:id>/update', views.getPosts),
+    path('categories/', views.getCategories)
 ]

@@ -43,6 +43,10 @@ export default function NavLink() {
       ],
     },
     {
+      name: "Dashboard",
+      url: "/dashboard/",
+    },
+    {
       name: "Perpustakaan",
       url: "/perpustakaan",
       child: [

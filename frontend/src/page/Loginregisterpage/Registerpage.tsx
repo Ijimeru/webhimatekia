@@ -23,7 +23,7 @@ export default function Registerpage() {
     if (passwordConfError) {
       return;
     }
-    const response = await fetch("/api/register-user", {
+    const response = await fetch("/api/register-user/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,10 +34,10 @@ export default function Registerpage() {
         password: password,
       }),
     });
-    console.log(response);
-    if (response.status == 406) setResponse("Maaf, email sudah digunakan");
-    else {
-      setResponse("Akun telah dibuat");
+    const data = await response.json();
+    if (response.status == 406) setResponse(data.message);
+    else if (response.status == 201) {
+      setResponse((prev) => data.message);
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -56,7 +56,7 @@ export default function Registerpage() {
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
+      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen md:py-0">
         <a href="#" className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
           <img className="w-8 h-8 mr-2" src="/static/img/logo-itera.png" alt="logo" />
           ITERA
