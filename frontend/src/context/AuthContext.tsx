@@ -50,10 +50,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setResendEmail("");
             setAuthTokens(data);
             localStorage.setItem("authTokens", JSON.stringify(data));
-            setTimeout(() => {
-              setUser(jwt_decode(data.access));
-              navigate("/");
-            }, 3000);
+            setUser(jwt_decode(data.access));
+            navigate("/dashboard");
           }
         })
     );
@@ -82,31 +80,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       },
     });
-    // if (response.status === 200) {
-    //   setAuthTokens(data);
-    //   localStorage.setItem("authTokens", JSON.stringify(data));
-    //   setLoginMessage({ status: "berhasil", message: "Anda berhasil login" });
-    //   setTimeout(() => {
-    //     setUser(jwt_decode(data.access));
-    //     setLoginMessage(null);
-    //     navigate("/");
-    //   }, 0);
-    //do something else
-    // (() => toast.error("Password atau email anda salah"))();
-    // const data = response;
-    // toast.promise(
-    //   response,{
-    //     success:{
-    //       render()
-    //     }
-    //   }
-    // )
-    // } else if (response.status === 401) {
-    //   (() => toast.error("Password atau email anda salah"))();
-    // } else if (response.status === 400) {
-    //   sessionStorage.setItem("email", email);
-    //   setLoginMessage({ status: "belum terverifikasi", message: data.non_field_errors[0] });
-    // }
   };
 
   const logout = () => {
