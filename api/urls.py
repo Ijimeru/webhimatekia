@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from rest_framework_simplejwt.views import (
-    TokenRefreshView,
+    TokenRefreshView, TokenVerifyView
 )
 from rest_framework_simplejwt.views import TokenBlacklistView
 urlpatterns = [
@@ -18,5 +18,6 @@ urlpatterns = [
     path('posts/<int:id>/delete', views.getPosts),
     path('posts/create', views.getPosts),
     path('posts/<int:id>/update', views.getPosts),
-    path('categories/', views.getCategories)
+    path('categories/', views.getCategories),
+    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]

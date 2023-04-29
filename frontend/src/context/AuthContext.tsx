@@ -2,38 +2,18 @@ import React, { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import useAxios from "../utils/useAxios";
-
-interface User {
-  username: string;
-  email: string;
-  nim: string;
-}
-interface AuthTokensType {
-  access: string | undefined;
-  refresh: string | undefined;
-}
-interface MessageType {
-  status: string;
-  message: string;
-}
-interface AuthContextType {
-  user: User | null;
-  authTokens: AuthTokensType | null;
-  loginMessage: MessageType | null;
-  login: (email: string, password: string) => void;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  setAuthTokens: React.Dispatch<React.SetStateAction<AuthTokensType | null>>;
-  logout: () => void;
-}
+import { toast, Slide } from "react-toastify";
+import { AuthContextType, AuthTokensType, User } from "../types/AuthTypes";
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
   authTokens: null,
-  loginMessage: null,
   setUser: () => {},
   setAuthTokens: () => {},
   login: (email: string, password: string) => {},
   logout: () => {},
+  setResendEmail: () => {},
+  resendEmail: "",
 });
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -44,36 +24,98 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => (localStorage.getItem("authTokens") ? jwt_decode(localStorage.getItem("authTokens")!) : null));
   const [authTokens, setAuthTokens] = useState<AuthTokensType | null>(() => (localStorage.getItem("authTokens") ? JSON.parse(localStorage.getItem("authTokens")!) : null));
-  const [loginMessage, setLoginMessage] = useState<{ status: string; message: string } | null>(null);
+  const [resendEmail, setResendEmail] = useState<string>("");
 
   // Fungsi Login
-  const login = async (email: string, password: string): Promise<string | void> => {
-    const response = await fetch("/api/token/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  const login = (email: string, password: string) => {
+    const response = new Promise((resolve, rejected) =>
+      fetch("/api/token/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+        .then((res) => {
+          if (res.status === 200) {
+            resolve("Anda berhasil login");
+            return res.json();
+          } else {
+            rejected(res.status);
+            return;
+          }
+        })
+        .then((data) => {
+          if (data?.access) {
+            setResendEmail("");
+            setAuthTokens(data);
+            localStorage.setItem("authTokens", JSON.stringify(data));
+            setTimeout(() => {
+              setUser(jwt_decode(data.access));
+              navigate("/");
+            }, 3000);
+          }
+        })
+    );
+
+    toast.promise(response, {
+      pending: {
+        render() {
+          return "Sedang login...";
+        },
       },
-      body: JSON.stringify({ email, password }),
+      success: {
+        render({ data }) {
+          return `${data}`;
+        },
+        icon: "🟢",
+      },
+      error: {
+        render({ data }) {
+          if (data == 401) {
+            setResendEmail("");
+            return "Email atau password anda salah";
+          } else {
+            setResendEmail(email);
+            return "Maaf, email anda belum terverifikasi";
+          }
+        },
+      },
     });
-    const data = await response.json();
-    if (response.status === 200) {
-      setAuthTokens(data);
-      localStorage.setItem("authTokens", JSON.stringify(data));
-      setLoginMessage({ status: "berhasil", message: "Anda berhasil login" });
-      setTimeout(() => {
-        setUser(jwt_decode(data.access));
-        setLoginMessage(null);
-        navigate("/");
-      }, 0);
-    } else if (response.status === 401) {
-      setLoginMessage({ status: "gagal", message: "Anda gagal login" });
-    } else if (response.status === 400) {
-      setLoginMessage({ status: "belum terverifikasi", message: data.non_field_errors[0] });
-    }
+    // if (response.status === 200) {
+    //   setAuthTokens(data);
+    //   localStorage.setItem("authTokens", JSON.stringify(data));
+    //   setLoginMessage({ status: "berhasil", message: "Anda berhasil login" });
+    //   setTimeout(() => {
+    //     setUser(jwt_decode(data.access));
+    //     setLoginMessage(null);
+    //     navigate("/");
+    //   }, 0);
+    //do something else
+    // (() => toast.error("Password atau email anda salah"))();
+    // const data = response;
+    // toast.promise(
+    //   response,{
+    //     success:{
+    //       render()
+    //     }
+    //   }
+    // )
+    // } else if (response.status === 401) {
+    //   (() => toast.error("Password atau email anda salah"))();
+    // } else if (response.status === 400) {
+    //   sessionStorage.setItem("email", email);
+    //   setLoginMessage({ status: "belum terverifikasi", message: data.non_field_errors[0] });
+    // }
   };
 
-  const logout = async () => {
+  const logout = () => {
     // logout user dengan menghapus data dari state
+    if (!localStorage.getItem("authTokens")) {
+      toast.warning("Anda belum login");
+      navigate("/login");
+      return;
+    }
     fetch("/api/token/blacklist/", {
       method: "POST",
       headers: {
@@ -91,11 +133,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       value={{
         user,
         authTokens,
-        loginMessage,
         setUser,
         login,
         setAuthTokens,
         logout,
+        resendEmail,
+        setResendEmail,
       }}
     >
       {children}

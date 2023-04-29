@@ -13,8 +13,6 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import Modal from "@mui/material/Modal";
-import { useAppDispatch } from "../../../Store";
-import { fetchPosts } from "../../../slicer/DashboardPostSlicer";
 
 const style = {
   box: {
@@ -40,7 +38,6 @@ const style = {
   },
 };
 const DashboardPosts = () => {
-  const dispatch = useAppDispatch();
   interface PostsType {
     id: number;
     title: string;
@@ -126,8 +123,7 @@ const DashboardPosts = () => {
   const axios = useAxios();
   const navigate = useNavigate();
   useEffect(() => {
-    // fetchData();
-    dispatch(fetchPosts());
+    fetchData();
   }, []);
 
   const handleModal = (id: number | string, func: (id: string | number | null) => void) => {

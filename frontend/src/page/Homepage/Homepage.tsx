@@ -49,7 +49,9 @@ export default function Homepage() {
   }, [authTokens]);
   async function fetchBook() {
     try {
-      const response = await axios.get("/book/");
+      const response = await axios.get("/book/", {
+        withCredentials: false,
+      });
       setBooks(response?.data);
     } catch (e: unknown) {
       setBooks(null);

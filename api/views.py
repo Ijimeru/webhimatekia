@@ -52,11 +52,15 @@ def resend_email(request):
     if request.method == 'POST':
         try:
             user = User.objects.get(email=request.data['email'])
-            send_action_email(user, request, "verifikasi")
-            return Response({"message": "Verifikasi email berhasil di kirim"}, status=HTTP_200_OK)
+            try:
+                send_action_email(user, request, "verifikasi")
+                return Response({"message": "Verifikasi email berhasil di kirim"},
+                                status=HTTP_200_OK)
+            except:
+                return Response({"message": "Email verifikasi gagal dikirim"}, status=HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({"message": "Email tidak ditemukan"}, HTTP_400_BAD_REQUEST)
-    return Response({"message": "gege"})
+    return Response()
 
 
 def activate_user(request, uidb64, token):

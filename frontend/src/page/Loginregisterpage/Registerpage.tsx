@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckPassword } from "../../utils/CheckPassword";
+import { toast } from "react-toastify";
 
 export default function Registerpage() {
   const emailRef = useRef<HTMLInputElement | null>(null);
@@ -35,12 +36,12 @@ export default function Registerpage() {
       }),
     });
     const data = await response.json();
-    if (response.status == 406) setResponse(data.message);
+    if (response.status == 406) (() => toast.error(data.message))();
     else if (response.status == 201) {
-      setResponse((prev) => data.message);
+      (() => toast.success(data.message + "silahkan verifikasi akun anda."))();
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
+      }, 3000);
     }
   }
 
@@ -125,7 +126,6 @@ export default function Registerpage() {
                 />
                 <p className={`text-red-800 ${passwordConfError ? "block" : "hidden"}`}> Password tidak sesuai</p>
               </div>
-              {response && <p className="text-center w-full">{response}</p>}
               <button
                 type="submit"
                 disabled={passwordConfError}

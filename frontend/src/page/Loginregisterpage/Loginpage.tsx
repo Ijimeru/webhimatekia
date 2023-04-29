@@ -1,22 +1,54 @@
-import React, { useRef, useContext, useState, useEffect, DependencyList } from "react";
-import { AuthContext } from "../../context/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useContext, useRef } from "react";
+import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
 
+import { AuthContext } from "../../context/AuthContext";
 export default function Loginpage() {
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
-  const { login, loginMessage } = useContext(AuthContext);
-  const resend = async (emailRef: string | undefined) => {
-    const response = await fetch("/api/resend-email/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  const { login, resendEmail, setResendEmail } = useContext(AuthContext);
+  const resend = (emailRef: string | null): void => {
+    if (emailRef == "") {
+      (() => toast.info("Email sudah dikirimkan, silahkan cek email anda"))();
+      return;
+    }
+    const response = new Promise((resolve, rejected) =>
+      fetch("/api/resend-email/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailRef,
+        }),
+      }).then((res) => {
+        if (res.status === 200) {
+          setResendEmail("");
+          resolve("Email verifikasi berhasil, silahkan cek email anda");
+        } else {
+          rejected("Email gagal dikirim...");
+        }
+      })
+    );
+
+    toast.promise(response, {
+      pending: {
+        render() {
+          return "Sedang mengirim email....";
+        },
       },
-      body: JSON.stringify({
-        email: emailRef,
-      }),
+      success: {
+        render({ data }) {
+          return `${data}`;
+        },
+        icon: "🟢",
+      },
+      error: {
+        render({ data }) {
+          return `${data}`;
+        },
+      },
     });
-    const data = await response.json();
   };
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
@@ -48,7 +80,6 @@ export default function Loginpage() {
                   className={`bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500
                   
                   `}
-                  disabled={loginMessage?.status === "belum terverifikasi" ? true : false}
                   placeholder="name@company.com"
                   required={true}
                 />
@@ -67,9 +98,8 @@ export default function Loginpage() {
                   required={true}
                 />
               </div>
-              {loginMessage && <p>{loginMessage.message}</p>}
-              {loginMessage?.status === "belum terverifikasi" && (
-                <a className="underline cursor-pointer" onClick={() => resend(emailRef.current?.value)}>
+              {resendEmail && (
+                <a className="underline cursor-pointer block mb-2 text-sm font-medium text-gray-900 dark:text-white" onClick={() => resend(resendEmail)}>
                   Kirim ulang kode verifikasi
                 </a>
               )}

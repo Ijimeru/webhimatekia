@@ -7,7 +7,7 @@ from django.utils import timezone
 class User(AbstractUser):
     username = models.CharField(unique=False, null=True, max_length=100)
     email = models.EmailField(unique=True, null=False)
-    nim = models.CharField(unique=True, max_length=9)
+    nim = models.CharField(max_length=9, blank=True)
     is_email_verified = models.BooleanField(default=False)
     # is_online = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
