@@ -1,9 +1,9 @@
-import React, { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
+import React, { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAxios from "../utils/useAxios";
-import { toast, Slide } from "react-toastify";
+import { toast } from "react-toastify";
 import { AuthContextType, AuthTokensType, User } from "../types/AuthTypes";
+import useAxios from "../utils/useAxios";
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -20,12 +20,10 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const axios = useAxios();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(() => (localStorage.getItem("authTokens") ? jwt_decode(localStorage.getItem("authTokens")!) : null));
   const [authTokens, setAuthTokens] = useState<AuthTokensType | null>(() => (localStorage.getItem("authTokens") ? JSON.parse(localStorage.getItem("authTokens")!) : null));
   const [resendEmail, setResendEmail] = useState<string>("");
-
   // Fungsi Login
   const login = (email: string, password: string) => {
     const response = new Promise((resolve, rejected) =>
@@ -99,8 +97,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(null);
     setAuthTokens(null);
     localStorage.removeItem("authTokens");
+    toast.success("Logout berhasil");
     navigate("/login");
   };
+
   return (
     <AuthContext.Provider
       value={{

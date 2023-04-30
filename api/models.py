@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django_extensions.db.fields import AutoSlugField
 # Create your models here.
 
 
@@ -46,11 +47,11 @@ class Book(models.Model):
 
 class Post(models.Model):
     title = models.CharField(max_length=100)
+    slug = AutoSlugField(populate_from='title')  # type: ignore
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     publisher = models.CharField(max_length=100)
     kategori = models.ManyToManyField(Category)
     content = models.TextField()
-    # is_published = models.BooleanField(default=False)
     STATUS = [
         ('draft', 'Draft'),
         ('published', 'Published'),

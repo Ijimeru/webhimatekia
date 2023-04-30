@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
 import Modal from "@mui/material/Modal";
+import { PostsType } from "../../../types/PostTypes";
 
 const style = {
   box: {
@@ -38,16 +39,6 @@ const style = {
   },
 };
 const DashboardPosts = () => {
-  interface PostsType {
-    id: number;
-    title: string;
-    author: string;
-    publisher: string;
-    content: string;
-    status: string;
-    actions: React.ReactElement | null;
-  }
-
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },
     { field: "title", headerName: "Title", minWidth: 130, width: 320 },
@@ -62,23 +53,23 @@ const DashboardPosts = () => {
         if (params.value == "draft") {
           return (
             <div className="flex flex-row gap-x-2 items-center justify-between">
-              <span className="capitalize inline-block">{params.value}</span>
               <MdOutlinePublish
                 className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(81,35,232)] overflow-visible cursor-pointer"
                 title="Publish to public"
-                onClick={() => handleModal(params.id, () => publish)}
+                onClick={() => handleModal(params.row.slug, () => publish)}
               />
+              <span className="capitalize inline-block">{params.value}</span>
             </div>
           );
         } else if (params.value == "published") {
           return (
             <div className="flex flex-row gap-x-2 items-center justify-between">
-              <span className="capitalize inline-block">{params.value}</span>
               <MdOutlinePublish
                 className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer rotate-180"
                 title="Unpublish"
-                onClick={() => handleModal(params.id, () => publish)}
+                onClick={() => handleModal(params.row.slug, () => publish)}
               />
+              <span className="capitalize inline-block">{params.value}</span>
             </div>
           );
         } else {
@@ -96,12 +87,12 @@ const DashboardPosts = () => {
           <div className="flex flex-row gap-x-1">
             <BsTrash
               className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer"
-              onClick={() => handleModal(params.id, () => trashData)}
+              onClick={() => handleModal(params.row.slug, () => trashData)}
               title="Masukkan ke kotak sampah"
             />
             <AiOutlineEye
               className="p-1 rounded-lg justify-center items-center text-white text-2xl bg-[rgb(13,202,240)] hover:text-[rgb(0,0,0)] cursor-pointer overflow-visible"
-              onClick={() => navigate(`/posts/${params.id}`)}
+              onClick={() => navigate(`/posts/${params.row.slug}`)}
               title="View Post"
             />
             <FaRegEdit className="p-1 rounded-lg justify-center items-center text-white text-2xl bg-[#ffc107] hover:text-[rgb(0,0,0)] cursor-pointer overflow-visible" title="Edit" />
@@ -110,13 +101,13 @@ const DashboardPosts = () => {
       },
     },
   ];
-  const publish = (id: string | null | number) => {
-    axios.patch(`/posts/${id}/update`, {
+  const publish = (slug: string | null | number) => {
+    axios.patch(`/posts/${slug}/update`, {
       status: "published",
     });
   };
   const [posts, setPosts] = useState<PostsType[] | []>([
-    { id: 0, title: "No data available", author: "No data available", publisher: "No data available", content: "No data available", status: "No data available", actions: <AiOutlineEye /> },
+    { id: 0, title: "No data available", author: "No data available", publisher: "No data available", content: "No data available", status: "No data available", actions: <AiOutlineEye />, slug: "No data available" },
   ]);
   const [filteredPosts, setFilteredPosts] = useState<PostsType[] | []>(posts);
   const [categories, setCategories] = useState<{ label: string }[]>([{ label: "No data available" }]);
@@ -126,16 +117,17 @@ const DashboardPosts = () => {
     fetchData();
   }, []);
 
-  const handleModal = (id: number | string, func: (id: string | number | null) => void) => {
+  const handleModal = (slug: number | string, func: (slug: string | number | null) => void) => {
     setOpen((prev) => !prev);
-    setId(id);
+    setSlug(slug);
     setCommand(func);
   };
-  const handleAccept = (id: number | string | null, func: (id: number | string | null) => void) => {
-    func(id);
+  const handleAccept = (slug: number | string | null, func: (slug: number | string | null) => void) => {
+    console.log(command);
+    func(slug);
   };
-  const trashData = async (id: number | string | null) => {
-    axios.delete(`/posts/${id}/delete`, {
+  const trashData = async (slug: number | string | null) => {
+    axios.delete(`/posts/${slug}/delete`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -145,13 +137,13 @@ const DashboardPosts = () => {
     });
     setPosts(
       posts.map((post) => {
-        if (post.id === id) {
+        if (post.slug === slug) {
           return { ...post, status: "trash" };
         }
         return post;
       })
     );
-    setFilteredPosts(posts.filter((post) => post.id != id && post.status != "trash"));
+    setFilteredPosts(posts.filter((post) => post.slug != slug && post.status != "trash"));
     setOpen((prev) => !prev);
   };
   async function fetchData() {
@@ -161,7 +153,7 @@ const DashboardPosts = () => {
       const data = posts.data.map((maps: PostsType) => {
         return {
           ...maps,
-          actions: maps.id,
+          actions: null,
         };
       });
       setPosts(data);
@@ -176,8 +168,8 @@ const DashboardPosts = () => {
       setPosts;
     }
   }
-  const [command, setCommand] = useState<(id: number | string | null) => void>(() => {});
-  const [id, setId] = useState<number | string | null>(null);
+  const [command, setCommand] = useState<(slug: number | string | null) => void>(() => {});
+  const [slug, setSlug] = useState<number | string | null>(null);
   const [open, setOpen] = useState(false);
   return (
     <div className={`m-[10px_20px_0_16px] h-auto min-h-[100%] relative text-[#3c434a] text-[13px] leading-[1.4em] min-w-[600px] `}>
@@ -196,7 +188,7 @@ const DashboardPosts = () => {
                   backgroundColor: "#dc3545",
                 },
               }}
-              onClick={() => handleAccept(id, command)}
+              onClick={() => handleAccept(slug, command)}
             >
               Buang
             </Button>

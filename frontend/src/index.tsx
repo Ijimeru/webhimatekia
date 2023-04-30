@@ -17,6 +17,7 @@ import Dashboard from "./utils/Dashboard";
 import Main from "./utils/Main";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoginRegisterPrivateRoute from "./PrivateRoute/LoginRegisterPrivateRoute";
 const App = () => {
   return (
     <>
@@ -29,9 +30,9 @@ const App = () => {
             <Route element={<Main component={<Activated />} />} path="/activated"></Route>
             <Route element={<Main component={<ActivateFail />} />} path="/activate-failed"></Route>
             {/* Email Route -end */}
-            <Route element={<Main component={<Adminpage />} />} path="/admin"></Route>
+            <Route element={<LoginRegisterPrivateRoute component={<Main component={<Adminpage />} />} />} path="/admin"></Route>
             {/* Auth Route -start */}
-            <Route element={<Main component={<Loginpage />} />} path="/login"></Route>
+            <Route element={<LoginRegisterPrivateRoute component={<Main component={<Loginpage />} />} />} path="/login"></Route>
             <Route element={<Main component={<Registerpage />} />} path="/register"></Route>
             {/* Auth Route -end */}
             {/* Dashboard Route -start */}

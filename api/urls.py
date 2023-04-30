@@ -14,10 +14,10 @@ urlpatterns = [
          views.activate_user, name="activate"),
     path('resend-email/', views.resend_email),
     path('posts/', views.getPosts),
-    path('posts/<int:id>/', views.getPosts),
-    path('posts/<int:id>/delete', views.getPosts),
+    path('posts/<slug:slug>/', views.getPosts),
+    path('posts/<slug:slug>/delete', views.getPosts),
     path('posts/create', views.getPosts),
-    path('posts/<int:id>/update', views.getPosts),
+    path('posts/<slug:slug>/update', views.getPosts),
     path('categories/', views.getCategories),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]

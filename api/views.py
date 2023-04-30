@@ -125,9 +125,9 @@ class BookApiView(ModelViewSet):
 
 @api_view(['GET', 'DELETE', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
-def getPosts(request, id=None):
+def getPosts(request, slug=None):
     if request.method == "DELETE":
-        post = Post.objects.get(pk=id)
+        post = Post.objects.get(slug=slug)
         post.status = request.data['command']
         post.save()
         return Response(status=HTTP_204_NO_CONTENT)
@@ -136,15 +136,15 @@ def getPosts(request, id=None):
         posts.title = request.data.get('title')
         posts.save()
     elif request.method == "PATCH":
-        post = Post.objects.get(pk=id)
+        post = Post.objects.get(slug=slug)
         serializer = PostSerializer(
             instance=post, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(status=HTTP_200_OK)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-    if (id != None):
-        posts = Post.objects.get(pk=id)
+    if (slug != None):
+        posts = Post.objects.get(pk=slug)
         serializer = PostSerializer(posts)
         return Response(serializer.data, status=HTTP_200_OK)
     posts = Post.objects.exclude(status="deleted")

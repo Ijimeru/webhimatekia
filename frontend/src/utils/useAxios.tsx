@@ -41,7 +41,7 @@ const useAxios = () => {
     setUser(jwt_decode(response.data.access));
     req.headers.Authorization = `Bearer ${response.data.access}`;
     if (req.data.token) req.data.token = response.data.access;
-    return req;
+    return { ...req, signal: controller.signal };
   });
   return axiosInstance;
 };
