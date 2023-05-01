@@ -23,7 +23,7 @@ class PostFactory(factory.django.DjangoModelFactory):
         for i in user:
             allId.add(i.id)  # type: ignore
         return random.choice(list(allId))
-    title = factory.Faker('sentence', nb_words=12)
+    title = factory.Faker('sentence', nb_words=6)
     author = models.User.objects.get(id=getUserId())
     publisher = factory.Faker('name')
     status = "draft"

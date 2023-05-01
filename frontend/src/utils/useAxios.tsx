@@ -40,8 +40,12 @@ const useAxios = () => {
     setAuthTokens(response.data);
     setUser(jwt_decode(response.data.access));
     req.headers.Authorization = `Bearer ${response.data.access}`;
-    if (req.data.token) req.data.token = response.data.access;
-    return { ...req, signal: controller.signal };
+    if (req.data) {
+      if (req.data.token) {
+        req.data.token = response.data.access;
+      }
+    }
+    return req;
   });
   return axiosInstance;
 };

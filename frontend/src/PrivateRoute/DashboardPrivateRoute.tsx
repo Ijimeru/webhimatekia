@@ -6,10 +6,10 @@ import useAxios from "../utils/useAxios";
 import { AuthContext } from "../context/AuthContext";
 
 interface props {
-  children: React.ReactNode;
+  component: React.ReactNode;
 }
 
-const DashboardPrivateRoute: React.FC<props> = ({ children }) => {
+const DashboardPrivateRoute: React.FC<props> = ({ component }) => {
   const navigate = useNavigate();
   const axios = useAxios();
   const authTokens: AuthTokensType = localStorage.getItem("authTokens") ? JSON.parse(localStorage.getItem("authTokens")!) : null;
@@ -23,7 +23,7 @@ const DashboardPrivateRoute: React.FC<props> = ({ children }) => {
       navigate("/login");
     }
   }
-  return <>{children}</>;
+  return <>{component}</>;
 };
 
 export default DashboardPrivateRoute;

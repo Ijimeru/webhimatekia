@@ -18,6 +18,7 @@ import Main from "./utils/Main";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoginRegisterPrivateRoute from "./PrivateRoute/LoginRegisterPrivateRoute";
+import DashboardPrivateRoute from "./PrivateRoute/DashboardPrivateRoute";
 const App = () => {
   return (
     <>
@@ -36,9 +37,9 @@ const App = () => {
             <Route element={<Main component={<Registerpage />} />} path="/register"></Route>
             {/* Auth Route -end */}
             {/* Dashboard Route -start */}
-            <Route element={<Dashboard component={[<DashboardHome />, <DashboardSidebar />]} />} path="/dashboard"></Route>
-            <Route element={<Dashboard component={[<DashboardPosts />, <DashboardSidebar />]} />} path="/posts"></Route>
-            <Route element={<Dashboard component={[<DashboardNewPost />, <DashboardSidebar />]} />} path="/posts/create"></Route>
+            <Route element={<DashboardPrivateRoute component={<Dashboard component={[<DashboardHome />, <DashboardSidebar />]} />} />} path="/dashboard"></Route>
+            <Route element={<DashboardPrivateRoute component={<Dashboard component={[<DashboardPosts />, <DashboardSidebar />]} />} />} path="/posts"></Route>
+            <Route element={<DashboardPrivateRoute component={<Dashboard component={[<DashboardNewPost />, <DashboardSidebar />]} />} />} path="/posts/create"></Route>
             {/* Dashboard Route -end */}
           </Routes>
         </AuthProvider>

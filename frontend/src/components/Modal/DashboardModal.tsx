@@ -1,28 +1,13 @@
-import React, { useReducer } from "react";
+import React from "react";
 
-import { Button, Typography, Modal, Box } from "@mui/material";
-import useAxios from "../../utils/useAxios";
+import { Box, Button, Modal, Typography } from "@mui/material";
+import DashboardPostContext from "../../context/DashboardPostContext";
+import { ConstantType } from "../../types/PostTypes";
 
-const axios = useAxios();
-
-interface PostsType {
-  id: number;
-  title: string;
-  author: string;
-  publisher: string;
-  content: string;
-  status: string;
-  actions: React.ReactElement | null;
-}
 interface DashboardModalProps {
-  text: string;
-  btext: string;
-  setPosts: React.Dispatch<React.SetStateAction<PostsType[] | null>>;
-  setFilteredPosts: React.Dispatch<React.SetStateAction<PostsType[] | null>>;
-  open: boolean;
-  id: number;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  posts: PostsType[];
+  type: ConstantType;
+  slug: string;
+  command(slug: string): void;
 }
 
 const style = {
@@ -49,84 +34,36 @@ const style = {
   },
 };
 
-type Action = { type: "trash" } | { type: "publish" };
+const DashboardModal: React.FC<DashboardModalProps> = ({ type, command, slug }) => {
+  const { open, setOpen } = React.useContext(DashboardPostContext);
 
-type State = { id: number };
-
-const DashboardModal: React.FC<DashboardModalProps> = ({ text, btext, setPosts, setFilteredPosts, open, setOpen, id, posts }) => {
-  function reducer(state: State, action: Action): void {
-    switch (action.type) {
-      case "trash":
-        axios.patch(`/posts/${id}/delete`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          status: "trash",
-        });
-        setPosts(
-          posts.map((post) => {
-            if (post.id === id) {
-              return { ...post, status: "trash" };
-            }
-            return post;
-          })
-        );
-        setFilteredPosts(posts.filter((post) => post.id != id && post.status != "trash"));
-        setOpen((prev) => !prev);
-        break;
-      case "publish":
-        axios.patch(`/posts/${id}/publish`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          status: "published",
-        });
-        setPosts(
-          posts.map((post) => {
-            if (post.id === id) {
-              return { ...post, status: "published" };
-            }
-            return post;
-          })
-        );
-        setFilteredPosts(posts.filter((post) => post.id != id && post.status != "published"));
-        setOpen((prev) => !prev);
-        break;
-      default:
-        break;
-    }
-  }
-  const initialState: State = { id: 0 };
-  const [state, dispatch] = useReducer(reducer, initialState);
   return (
     <Modal open={open} onClose={() => setOpen((prev) => !prev)} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
       <Box sx={style.box}>
-        {btext}
-        {text}
         <Typography id="modal-modal-title" variant="h6" component="h2">
-          Apakah anda yakin ingin memasukkan ke kotak sampah?
+          {type.text}
         </Typography>
         <div className="flex flex-row justify-center gap-x-3">
           <Button
             id="modal-modal-description"
             sx={{
               ...style.button,
-              backgroundColor: "#dc3545",
+              backgroundColor: type.color,
               "&:hover": {
-                backgroundColor: "#dc3545",
+                backgroundColor: type.color,
               },
             }}
-            onClick={() => {}}
+            onClick={() => command(slug)}
           >
-            Buang
+            {type.btext}
           </Button>
           <Button
             id="modal-modal-cancel"
             sx={{
               ...style.button,
-              backgroundColor: "#15d36a",
+              backgroundColor: "#4a4948",
               "&:hover": {
-                backgroundColor: "#15d36a",
+                backgroundColor: "#4a4948",
               },
             }}
             onClick={() => setOpen((prev) => !prev)}

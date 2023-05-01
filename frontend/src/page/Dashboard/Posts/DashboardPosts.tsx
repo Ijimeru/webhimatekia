@@ -1,44 +1,20 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import useAxios from "../../../utils/useAxios";
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import { AiOutlineEye } from "react-icons/ai";
-import { BsTrash } from "react-icons/bs";
-import { MdOutlinePublish } from "react-icons/md";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import React, { useContext, useEffect, useState } from "react";
+import { AiOutlineEye } from "react-icons/ai";
+import { BsRecycle, BsTrash, BsSearch } from "react-icons/bs";
 import { FaRegEdit } from "react-icons/fa";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
+import { MdOutlinePublish } from "react-icons/md";
+import { Link, useNavigate } from "react-router-dom";
 
-import Modal from "@mui/material/Modal";
-import { PostsType } from "../../../types/PostTypes";
+import DashboardModal from "../../../components/Modal/DashboardModal";
+import { BUANG, PUBLISH, RECYCLE, UNPUBLISH } from "../../../constant/DashboardPostsConstant";
+import DashboardPostContext from "../../../context/DashboardPostContext";
+import { ConstantType } from "../../../types/PostTypes";
 
-const style = {
-  box: {
-    position: "absolute" as "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid rgb(163,60,170)",
-    boxShadow: 24,
-    p: 4,
-    display: "flex",
-    flexDirection: "column",
-    rowGap: 2,
-  },
-  button: {
-    p: 1,
-    backgroundColor: null,
-    borderRadius: "16px",
-    textTransform: "none",
-    color: "white",
-  },
-};
 const DashboardPosts = () => {
+  //INI KOLOM TABEL YAK
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },
     { field: "title", headerName: "Title", minWidth: 130, width: 320 },
@@ -56,7 +32,7 @@ const DashboardPosts = () => {
               <MdOutlinePublish
                 className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(81,35,232)] overflow-visible cursor-pointer"
                 title="Publish to public"
-                onClick={() => handleModal(params.row.slug, () => publish)}
+                onClick={() => handleModal(params.row.slug, () => publishData, PUBLISH)}
               />
               <span className="capitalize inline-block">{params.value}</span>
             </div>
@@ -67,13 +43,22 @@ const DashboardPosts = () => {
               <MdOutlinePublish
                 className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer rotate-180"
                 title="Unpublish"
-                onClick={() => handleModal(params.row.slug, () => publish)}
+                onClick={() => handleModal(params.row.slug, () => unPublishData, UNPUBLISH)}
               />
               <span className="capitalize inline-block">{params.value}</span>
             </div>
           );
-        } else {
-          return <span className="capitalize">{params.value}</span>;
+        } else if (params.value == "trash") {
+          return (
+            <div className="flex flex-row gap-x-2 items-center justify-between">
+              <BsRecycle
+                className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(14,192,67)] overflow-visible cursor-pointer rotate-180"
+                title="Make to draft"
+                onClick={() => handleModal(params.row.slug, () => recycleData, RECYCLE)}
+              />
+              <span className="capitalize inline-block">{params.value}</span>
+            </div>
+          );
         }
       },
     },
@@ -87,7 +72,7 @@ const DashboardPosts = () => {
           <div className="flex flex-row gap-x-1">
             <BsTrash
               className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer"
-              onClick={() => handleModal(params.row.slug, () => trashData)}
+              onClick={() => handleModal(params.row.slug, () => trashData, BUANG)}
               title="Masukkan ke kotak sampah"
             />
             <AiOutlineEye
@@ -101,113 +86,35 @@ const DashboardPosts = () => {
       },
     },
   ];
-  const publish = (slug: string | null | number) => {
-    axios.patch(`/posts/${slug}/update`, {
-      status: "published",
-    });
-  };
-  const [posts, setPosts] = useState<PostsType[] | []>([
-    { id: 0, title: "No data available", author: "No data available", publisher: "No data available", content: "No data available", status: "No data available", actions: <AiOutlineEye />, slug: "No data available" },
-  ]);
-  const [filteredPosts, setFilteredPosts] = useState<PostsType[] | []>(posts);
-  const [categories, setCategories] = useState<{ label: string }[]>([{ label: "No data available" }]);
-  const axios = useAxios();
+  //INI UTILITY
+  const queryParameters = new URLSearchParams(window.location.search);
+  const status = queryParameters.get("status");
+  const search = queryParameters.get("search");
+
+  //INI CONTEXT
+  const { categories, posts, filteredPosts, setFilteredPosts, setOpen, fetchData, trashData, publishData, unPublishData, recycleData } = useContext(DashboardPostContext);
+
+  //INI HOOK
   const navigate = useNavigate();
   useEffect(() => {
     fetchData();
   }, []);
+  const [command, setCommand] = useState<(slug: string) => void>(() => {});
+  const [type, setType] = useState<ConstantType>(BUANG);
+  const [slug, setSlug] = useState<string>("");
 
-  const handleModal = (slug: number | string, func: (slug: string | number | null) => void) => {
+  const handleModal = (slug: string, func: (slug: string) => void, type: ConstantType) => {
     setOpen((prev) => !prev);
     setSlug(slug);
+    setType(type);
+
     setCommand(func);
   };
-  const handleAccept = (slug: number | string | null, func: (slug: number | string | null) => void) => {
-    console.log(command);
-    func(slug);
-  };
-  const trashData = async (slug: number | string | null) => {
-    axios.delete(`/posts/${slug}/delete`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: {
-        command: "trash",
-      },
-    });
-    setPosts(
-      posts.map((post) => {
-        if (post.slug === slug) {
-          return { ...post, status: "trash" };
-        }
-        return post;
-      })
-    );
-    setFilteredPosts(posts.filter((post) => post.slug != slug && post.status != "trash"));
-    setOpen((prev) => !prev);
-  };
-  async function fetchData() {
-    try {
-      const posts = await axios.get("/posts/");
-      const categories = await axios.get("/categories/");
-      const data = posts.data.map((maps: PostsType) => {
-        return {
-          ...maps,
-          actions: null,
-        };
-      });
-      setPosts(data);
-      console.log(data);
-      setFilteredPosts(data.filter((d: PostsType) => d.status != "trash"));
-      setCategories(
-        categories.data.map((map: { name: string }) => {
-          return { label: map.name };
-        })
-      );
-    } catch (e) {
-      setPosts;
-    }
-  }
-  const [command, setCommand] = useState<(slug: number | string | null) => void>(() => {});
-  const [slug, setSlug] = useState<number | string | null>(null);
-  const [open, setOpen] = useState(false);
+
   return (
     <div className={`m-[10px_20px_0_16px] h-auto min-h-[100%] relative text-[#3c434a] text-[13px] leading-[1.4em] min-w-[600px] `}>
-      <Modal open={open} onClose={() => setOpen((prev) => !prev)} aria-labelledby="modal-modal-title" aria-describedby="modal-modal-description">
-        <Box sx={style.box}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Apakah anda yakin ingin memasukkan ke kotak sampah?
-          </Typography>
-          <div className="flex flex-row justify-center gap-x-3">
-            <Button
-              id="modal-modal-description"
-              sx={{
-                ...style.button,
-                backgroundColor: "#dc3545",
-                "&:hover": {
-                  backgroundColor: "#dc3545",
-                },
-              }}
-              onClick={() => handleAccept(slug, command)}
-            >
-              Buang
-            </Button>
-            <Button
-              id="modal-modal-cancel"
-              sx={{
-                ...style.button,
-                backgroundColor: "#15d36a",
-                "&:hover": {
-                  backgroundColor: "#15d36a",
-                },
-              }}
-              onClick={() => setOpen((prev) => !prev)}
-            >
-              Batalkan
-            </Button>
-          </div>
-        </Box>
-      </Modal>
+      <DashboardModal type={type!} slug={slug} command={command} />
+
       <div className="flex justify-between">
         <div>
           <div className="flex flex-row items-center">
@@ -217,38 +124,88 @@ const DashboardPosts = () => {
             </Link>
           </div>
           <div className="flex flex-row gap-x-3">
-            <span className="text-blue-700 cursor-pointer" onClick={() => setFilteredPosts(posts.filter((post) => post.status != "trash"))}>
-              All ({posts.filter((post) => post.status != "trash").length})
+            <span
+              className="text-blue-700 cursor-pointer"
+              onClick={() => {
+                search
+                  ? setFilteredPosts(
+                      posts!.filter((post) => {
+                        return post.title.toLowerCase().includes(search.toLowerCase());
+                      })
+                    )
+                  : setFilteredPosts(posts);
+                search ? navigate(`/posts/?search=${search}`) : navigate("/posts/");
+              }}
+            >
+              All ({search ? posts!.filter((post) => post.title.toLowerCase().includes(search)).length : posts!.length})
             </span>
             |
-            <span className="text-blue-700 cursor-pointer" onClick={() => setFilteredPosts(posts.filter((post) => post.status == "published"))}>
+            <span
+              className="text-blue-700 cursor-pointer"
+              onClick={() => {
+                search ? setFilteredPosts(posts!.filter((post) => post.status == "draft" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "draft"));
+                search ? navigate(`/posts/?status=draft&search=${search}`) : navigate("/posts/?status=draft");
+              }}
+            >
+              Draft (
+              {search
+                ? posts?.filter((post) => post.status == "draft" && post.title.toLowerCase().includes(search.toLowerCase())).length
+                : posts?.filter((post) => {
+                    return post.status == "draft";
+                  }).length}
+              )
+            </span>
+            |
+            <span
+              className="text-blue-700 cursor-pointer"
+              onClick={() => {
+                search ? setFilteredPosts(posts!.filter((post) => post.status == "published" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "published"));
+                search ? navigate(`/posts/?status=published&search=${search}`) : navigate("/posts/?status=published");
+              }}
+            >
               Published (
-              {
-                posts?.filter((post) => {
-                  return post.status == "published";
-                }).length
-              }
+              {search
+                ? posts?.filter((post) => post.status == "published" && post.title.toLowerCase().includes(search.toLowerCase())).length
+                : posts?.filter((post) => {
+                    return post.status == "published";
+                  }).length}
+              )
+            </span>
+            |
+            <span
+              className="text-blue-700 cursor-pointer"
+              onClick={() => {
+                search ? setFilteredPosts(posts!.filter((post) => post.status == "trash" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "trash"));
+                search ? navigate(`/posts/?status=trash&search=${search}`) : navigate("/posts/?status=trash");
+              }}
+            >
+              Trash (
+              {search
+                ? posts?.filter((post) => post.status == "trash" && post.title.toLowerCase().includes(search.toLowerCase())).length
+                : posts?.filter((post) => {
+                    return post.status == "trash";
+                  }).length}
               )
             </span>
           </div>
         </div>
         <div>
-          <div>
+          <div className="relative">
             <input
               type="text"
-              className="border border-[#cc62ce] p-[4px_8px] font-semibold rounded-sm focus-within:shadow-[0_0_0_2px_#fff,0_0_0_4px_##cc62ce] focus:outline-[#cc62ce] mr-1"
+              className="border border-[#cc62ce] p-[4px_8px_4px_28px] font-semibold rounded-xl focus-within:shadow-[0_0_0_2px_#fff,0_0_0_4px_##cc62ce] focus:outline-[#cc62ce] mr-1"
               tabIndex={1}
-              onChange={(e) =>
+              placeholder="Cari berdasarkan title..."
+              onChange={(e) => {
                 setFilteredPosts(
-                  posts.filter((post) => {
+                  posts!.filter((post) => {
                     return post.title.toLowerCase().includes(e.target.value.toLowerCase());
                   })
-                )
-              }
+                );
+                status ? navigate(`/posts/?search=${e.target.value}&status=${status}`) : navigate("/posts/?search=" + e.target.value);
+              }}
             />
-            <span className="border border-[#cc62ce] inline-block p-[4px_8px] text-[#cc62ce] font-semibold rounded-sm cursor-pointer  select-none hover:text-[#8f4983c9]" tabIndex={1}>
-              Search Posts
-            </span>
+            <BsSearch className="absolute top-1/2 -translate-y-1/2 left-3" />
           </div>
         </div>
       </div>
