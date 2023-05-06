@@ -3,7 +3,7 @@ import React, { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AuthContextType, AuthTokensType, User } from "../types/AuthTypes";
-import useAxios from "../utils/useAxios";
+import useAxios from "../hook/useAxios";
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setAuthTokens(data);
             localStorage.setItem("authTokens", JSON.stringify(data));
             setUser(jwt_decode(data.access));
-            navigate("/dashboard");
+            navigate("/dashboard/");
           }
         })
     );

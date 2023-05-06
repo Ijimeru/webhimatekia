@@ -2,7 +2,9 @@ import React, { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { BiBell } from "react-icons/bi";
 import { CiSettings } from "react-icons/ci";
-
+import { GiHamburgerMenu } from "react-icons/gi";
+import { DashboardContext } from "../../context/DashboardContext";
+import { AiOutlineUser } from "react-icons/ai";
 interface MyComponentProps {
   component: React.ReactNode;
 }
@@ -11,15 +13,35 @@ const DashboardHeader: React.FC<MyComponentProps> = ({ component }) => {
   const [infoActive, setInfoActive] = useState(false);
   const [bellActive, setBellActive] = useState(false);
   const { user, logout } = useContext(AuthContext);
+  const { setSidebarActive, sidebarActive } = useContext(DashboardContext);
   return (
     <>
       <div className="bg-[rgb(248,249,250)] flex flex-col">
         <div className="px-4 flex flex-row justify-between select-none">
-          <h1 className="text-[#464646] py-4 text-[25px] overflow-hidden text-ellipsis whitespace-nowrap max-w-[256px] font-normal leading-[1.2]">{user?.username}</h1>
+          {/* HAMBURGER/NAMA AWAL */}
+          <h1 className="text-[#464646] py-4 text-[25px] overflow-hidden text-ellipsis whitespace-nowrap max-w-[256px] font-normal leading-[1.2] hidden md:block">{user?.username}</h1>
+          <span
+            className={`bg-transparent border-none items-center text-[#a33caa] flex shrink-0 h-16 justify-center p-0 w-16 overflow-visible normal-case m-0 leading-[1.15] cursor-pointer transition-transform md:hidden hover:text-white hover:bg-[#a33caa] focus:text-white focus:bg-[#a33caa] active:text-white active:bg-[#a33caa]`}
+            onClick={() => setSidebarActive((prev) => !prev)}
+            tabIndex={1}
+          >
+            <span className="inline-block h-6 relative align-middle w-6 normal-case leading-[1.15] transition-transform" tabIndex={2}>
+              <GiHamburgerMenu className="fill-current h-full left-0 top-0 absolute w-full" />
+            </span>
+          </span>
+          {/* HAMBURGER/NAMA AKHIR */}
+          {/* LOGO -AWAL */}
+          <div className="flex items-center h-auto">
+            <span className="rounded-full overflow-hidden">
+              <img className="w-16" src="/static/img/logo-himatekia.png" alt="logo-itera" />
+            </span>
+            <span>HIMATEKIA</span>
+          </div>
+          {/* LOGO -AKHIR */}
           <div className=" flex flex-row hover:text-[#495057] focus:text-[#495057] text-[#555555]">
             {/* Bell -awal */}
             <div
-              className={`min-w-[64px] max-w-[64px] p-4 hover:bg-[rgba(0,0,0,0.025)] focus:bg-[rgba(0,0,0,0.025)] flex justify-center cursor-pointer items-center relative ${
+              className={`min-w-[64px] max-w-[64px] p-4 hover:bg-[rgba(0,0,0,0.025)] focus:bg-[rgba(0,0,0,0.025)] hidden md:flex justify-center cursor-pointer items-center relative ${
                 bellActive &&
                 'before:content-[""] before:cursor-default before:block before:h-full before:left-0 before:top-0 before:fixed before:w-full before:z-[2] after:border-solid after:h-0 after:w-0 after:border-[transparent_transparent_#fff] after:border-8 after:border-t-0 after:-bottom-4 after:content-[""] after:cursor-default after:absolute after:right-4 after:z-[11]'
               }`}
@@ -33,7 +55,7 @@ const DashboardHeader: React.FC<MyComponentProps> = ({ component }) => {
             <a
               title="Informasi Akun"
               tabIndex={-1}
-              className="hover:bg-[rgba(0,0,0,0.025)] p-4 flex items-center cursor-pointer  transition-all duration-200 relative focus:bg-[rgba(0,0,0,0.025)] active:bg-[rgba(0,0,0,0.025)]"
+              className="hover:bg-[rgba(0,0,0,0.025)] p-4  items-center cursor-pointer  transition-all duration-200 relative focus:bg-[rgba(0,0,0,0.025)] active:bg-[rgba(0,0,0,0.025)] hidden md:flex"
               onClick={() => setInfoActive((prev) => !prev)}
             >
               <p className="text-base inline-block ">{user?.email}</p>
@@ -48,6 +70,11 @@ const DashboardHeader: React.FC<MyComponentProps> = ({ component }) => {
               </div>
             </a>
             {/* Informasi Akun -akhir */}
+            {/* Informasi Akun -awal (mobile) */}
+            <button className="">
+              <AiOutlineUser />
+            </button>
+            {/* Informasi Akun -akhir (mobile) */}
           </div>
         </div>
         {/* Dropdown informasi akun -awal */}
@@ -103,7 +130,7 @@ const DashboardHeader: React.FC<MyComponentProps> = ({ component }) => {
           </section>
         )}
         {/* Dropdown bell -akhir */}
-        {component}
+        <div className={`m-[10px_20px_0_16px] h-auto min-h-[100%] relative text-[#3c434a] text-[13px] leading-[1.4em] min-w-[600px] `}>{component}</div>
       </div>
     </>
   );

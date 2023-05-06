@@ -1,6 +1,6 @@
 import React from "react";
 import { CategoryType, DashboardPostContextType, PostsType } from "../types/PostTypes";
-import useAxios from "../utils/useAxios";
+import useAxios from "../hook/useAxios";
 import { toast } from "react-toastify";
 
 export const DashboardPostContext = React.createContext<DashboardPostContextType>({
@@ -17,6 +17,7 @@ export const DashboardPostContext = React.createContext<DashboardPostContextType
   publishData: () => {},
   unPublishData: () => {},
   recycleData: () => {},
+  deleteData: () => {},
 });
 interface DashboardPostProviderType {
   children: React.ReactNode;
@@ -28,7 +29,7 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
   // INI UTILITY
   const queryParameters = new URLSearchParams(window.location.search);
   const status = queryParameters.get("status");
-  const search = queryParameters.get("status");
+  const search = queryParameters.get("search");
   // STATE ADA DISINI YA
   const [posts, setPosts] = React.useState<PostsType[] | null>([]);
   const [categories, setCategories] = React.useState<CategoryType[] | null>([]);
@@ -37,13 +38,11 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
 
   // FUNGSI PENGUBAH STATUS POST
   const ubahStatus = (stat: string, statUrl: string, slug: string) => {
-    const postsBaru: PostsType[] = posts!.map((post: PostsType) => (post.slug === slug ? { ...post, status: stat } : post));
+    let postsBaru: PostsType[] = stat == "deleted" ? posts!.filter((post) => post.slug !== slug) : posts!.map((post: PostsType) => (post.slug === slug ? { ...post, status: stat } : post));
     setPosts(postsBaru);
-    setFilteredPosts(
-      status == statUrl
-        ? postsBaru?.filter((post) => post.slug !== slug && post.status === statUrl).filter((post) => post.title.toLowerCase().includes(search!.toLowerCase()))
-        : postsBaru.filter((post) => post.title.toLowerCase().includes(search!.toLowerCase()))
-    );
+    postsBaru = status == statUrl ? postsBaru?.filter((post) => post.slug !== slug && post.status == statUrl) : postsBaru;
+    postsBaru = search ? postsBaru.filter((post) => post.title.toLowerCase().includes(search!.toLowerCase())) : postsBaru;
+    setFilteredPosts(postsBaru);
   };
   // SEMUA FUNGSI UTILITAS CRUD
   async function fetchData() {
@@ -71,11 +70,12 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
           },
         })
         .then((res) => {
-          if (res.status == 200) {
-            ubahStatus("trash", "draft", slug);
+          console.log(res.status);
+          if (res.status == 204) {
             resolve("Data anda berhasil dibuang 👍");
+            ubahStatus("trash", "draft", slug);
           } else {
-            resolve("Data gagal dibuang 😓");
+            rejected("Data gagal dibuang 😓");
           }
         })
         .catch(() => rejected("Data gagal dibuang, periksa koneksi anda 🚨"))
@@ -107,8 +107,8 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
         })
         .then((response) => {
           if (response.status == 200) {
-            ubahStatus("published", "draft", slug);
             resolve("Publikasi sukses 👍");
+            ubahStatus("published", "draft", slug);
           } else {
             rejected("Publikasi gagal 😓");
           }
@@ -142,9 +142,7 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
         })
         .then((res) => {
           if (res.status == 200) {
-            const postsBaru: PostsType[] = posts!.map((post: PostsType) => (post.slug === slug ? { ...post, status: "draft" } : post));
-            setPosts(postsBaru);
-            setFilteredPosts(status == "published" ? postsBaru?.filter((post) => post.slug !== slug && post.status === "published") : postsBaru);
+            ubahStatus("draft", "published", slug);
             resolve("Publikasi berhasil dibatalkan 👍");
           } else {
             rejected("Perintah gagal 😓");
@@ -180,9 +178,7 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
         })
         .then((res) => {
           if ((res.status = 200)) {
-            const postsBaru: PostsType[] = posts!.map((post: PostsType) => (post.slug === slug ? { ...post, status: "draft" } : post));
-            setPosts(postsBaru);
-            setFilteredPosts(status == "trash" ? postsBaru?.filter((post) => post.slug !== slug && post.status === "trash" && post.title.toLowerCase().includes(search!.toLowerCase())) : postsBaru);
+            ubahStatus("draft", "trash", slug);
             resolve("Post anda berhasil dikembalikan 👍");
           } else {
             rejected("Perintah gagal 😓");
@@ -209,8 +205,44 @@ export const DashboardPostProvider: React.FC<DashboardPostProviderType> = ({ chi
       },
     });
   };
+  const deleteData = (slug: string) => {
+    setOpen((prev) => !prev);
+    const response = new Promise((resolve, rejected) =>
+      axios
+        .patch(`/posts/${slug}/update`, {
+          status: "deleted",
+        })
+        .then((res) => {
+          if ((res.status = 200)) {
+            ubahStatus("deleted", "trash", slug);
+            resolve("Post anda berhasil dihapus 👍");
+          } else {
+            rejected("Perintah gagal 😓");
+          }
+        })
+        .catch(() => rejected("Post gagal dihapus, silahkan cek koneksi anda 🚨"))
+    );
+
+    toast.promise(response, {
+      pending: {
+        render() {
+          return "Sedang menghapus post...";
+        },
+      },
+      success: {
+        render({ data }) {
+          return `${data}`;
+        },
+      },
+      error: {
+        render({ data }) {
+          return `${data}`;
+        },
+      },
+    });
+  };
   return (
-    <DashboardPostContext.Provider value={{ posts, setPosts, categories, setCategories, filteredPosts, setFilteredPosts, open, setOpen, trashData, fetchData, publishData, unPublishData, recycleData }}>
+    <DashboardPostContext.Provider value={{ posts, setPosts, categories, setCategories, filteredPosts, setFilteredPosts, open, setOpen, trashData, fetchData, publishData, unPublishData, recycleData, deleteData }}>
       {children}
     </DashboardPostContext.Provider>
   );

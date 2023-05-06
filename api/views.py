@@ -5,6 +5,7 @@ from .serializers import UserSerializer, MyTokenObtainPairSerializer, BookSerial
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import CreateAPIView
 from .models import Book, User, Post, Category
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 import threading
@@ -17,6 +18,9 @@ from django.template.loader import render_to_string
 from .utils import generate_token
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.models import Group
+from rest_framework.parsers import MultiPartParser
 import re
 # Create your views here.
 
@@ -95,8 +99,10 @@ def registerUser(request):
         register = UserSerializer(data=request.data)
         if register.is_valid():
             user = register.save()
+            group = Group.objects.get(name="default")
+            group.user_set.add(user)  # type:ignore
             send_action_email(user, request, "verifikasi")
-            return Response({"message": "Akun berhasil dibuat"}, status=HTTP_201_CREATED)
+            return Response({"message": "Akun berhasil dibuat "}, status=HTTP_201_CREATED)
         return Response({"message": "Email telah digunakan"}, status=HTTP_406_NOT_ACCEPTABLE)
     return (Response())
 
@@ -123,14 +129,40 @@ class BookApiView(ModelViewSet):
         return book
 
 
-@api_view(['GET', 'DELETE', 'PATCH'])
-@permission_classes([permissions.IsAuthenticated])
+@api_view(['GET', 'DELETE', 'PATCH', 'POST'])
+@permission_classes([permissions.IsAdminUser])
 def getPosts(request, slug=None):
     if request.method == "DELETE":
         post = Post.objects.get(slug=slug)
         post.status = request.data['command']
         post.save()
         return Response(status=HTTP_204_NO_CONTENT)
+    elif request.method == "POST":
+        request.data['kategori'] = Category.objects.filter(
+            name__in=request.data.getlist('categories[]'))[0]
+        request.data.pop('categories[]')
+        request.data['author'] = request.user.id
+        print(dir(request.FILES['hero_img[]']))
+        if request.FILES['hero_img[]']:
+            file_name = request.FILES['hero_img[]'].name
+            file_path = request.FILES['hero_img[]'].temporary_file_path()
+        serializer = PostSerializer(data=request.data)
+        # Post.objects.create(author=request.user, title=request.data['title'],
+        #                     content=request.data['content'], hero_img=request.data['hero_img[]'], status=request.data['status'])
+        if serializer.is_valid():
+            print(serializer.validated_data)
+            serializer.create(serializer.validated_data)
+        # y = Category.objects.filter(
+        #     name__in=request.data.getlist('categories[]'))
+        # z = Post.objects.all()[0]
+        # z.kategori.add(*y)
+        # z.save()
+        return Response(status=HTTP_200_OK)
+        serializer = PostSerializer(request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=HTTP_200_OK)
+        return Response(status=HTTP_400_BAD_REQUEST)
     elif request.method == "PUT":
         posts = Post.objects.get(pk=request.query_params.get('id'))
         posts.title = request.data.get('title')
@@ -150,6 +182,11 @@ def getPosts(request, slug=None):
     posts = Post.objects.exclude(status="deleted")
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data)
+
+
+class PostCreateView(CreateAPIView):
+    serializer_class = PostSerializer
+    parser_classes = (MultiPartParser,)
 
 
 @api_view(['GET', 'DELETE'])

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { BiBookBookmark, BiFootball } from "react-icons/bi";
 import { MdOutlineArticle, MdOutlineComputer } from "react-icons/md";
-import useAxios from "../../utils/useAxios";
+import useAxios from "../../hook/useAxios";
 export default function Homepage() {
   interface FiturType {
     judul: string;

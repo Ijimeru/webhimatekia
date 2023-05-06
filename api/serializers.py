@@ -19,16 +19,35 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        slug_field="username",
-        many=False,
-        read_only=True
-    )
+    # author = serializers.SlugRelatedField(
+    #     slug_field="username",
+    #     many=False,
+    #     read_only=True
+    # )
+    hero_img = serializers.ImageField(required=False, use_url="post/image")
 
     class Meta:
         model = Post
-        fields = '__all__'
+        exclude = ['kategori']
         ordering = '-created_at'
+
+    # def save(self,**kwargs):
+    #     validated_data = [
+    #         {**attrs, **kwargs} for attrs in self.validated_data
+    #     ]
+    #     hero_img = self.validated_data.pop('hero_img', None)
+    #     post = Post.objects.create(**self.validated_data)  # type:ignore
+    #     if hero_img:
+    #         post.hero_img.save(hero_img.name, hero_img)
+    #     return post
+
+    # def create(self, validated_data):
+    #     # print(validated_data)
+    #     hero_img = validated_data.pop('hero_img', None)
+    #     post = Post.objects.create(**validated_data)
+    #     if hero_img:
+    #         post.hero_img.save(hero_img.name, hero_img)
+    #     return post
 
 
 class CategorySerializer(serializers.ModelSerializer):

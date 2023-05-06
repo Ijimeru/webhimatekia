@@ -5,11 +5,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { AiOutlineEye } from "react-icons/ai";
 import { BsRecycle, BsTrash, BsSearch } from "react-icons/bs";
 import { FaRegEdit } from "react-icons/fa";
-import { MdOutlinePublish } from "react-icons/md";
+import { MdOutlinePublish, MdDeleteForever } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 
 import DashboardModal from "../../../components/Modal/DashboardModal";
-import { BUANG, PUBLISH, RECYCLE, UNPUBLISH } from "../../../constant/DashboardPostsConstant";
+import { BUANG, DELETE, PUBLISH, RECYCLE, UNPUBLISH } from "../../../constant/DashboardPostsConstant";
 import DashboardPostContext from "../../../context/DashboardPostContext";
 import { ConstantType } from "../../../types/PostTypes";
 
@@ -70,14 +70,22 @@ const DashboardPosts = () => {
       renderCell: (params: GridRenderCellParams) => {
         return (
           <div className="flex flex-row gap-x-1">
-            <BsTrash
-              className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer"
-              onClick={() => handleModal(params.row.slug, () => trashData, BUANG)}
-              title="Masukkan ke kotak sampah"
-            />
+            {params.row.status == "trash" ? (
+              <MdDeleteForever
+                className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer"
+                onClick={() => handleModal(params.row.slug, () => deleteData, DELETE)}
+                title="Delete Permanen"
+              />
+            ) : (
+              <BsTrash
+                className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible cursor-pointer"
+                onClick={() => handleModal(params.row.slug, () => trashData, BUANG)}
+                title="Masukkan ke kotak sampah"
+              />
+            )}
             <AiOutlineEye
               className="p-1 rounded-lg justify-center items-center text-white text-2xl bg-[rgb(13,202,240)] hover:text-[rgb(0,0,0)] cursor-pointer overflow-visible"
-              onClick={() => navigate(`/posts/${params.row.slug}`)}
+              onClick={() => navigate(`/dashboard/posts/${params.row.slug}`)}
               title="View Post"
             />
             <FaRegEdit className="p-1 rounded-lg justify-center items-center text-white text-2xl bg-[#ffc107] hover:text-[rgb(0,0,0)] cursor-pointer overflow-visible" title="Edit" />
@@ -92,12 +100,14 @@ const DashboardPosts = () => {
   const search = queryParameters.get("search");
 
   //INI CONTEXT
-  const { categories, posts, filteredPosts, setFilteredPosts, setOpen, fetchData, trashData, publishData, unPublishData, recycleData } = useContext(DashboardPostContext);
+  const { categories, posts, filteredPosts, setFilteredPosts, setOpen, fetchData, trashData, publishData, unPublishData, recycleData, deleteData } = useContext(DashboardPostContext);
 
   //INI HOOK
   const navigate = useNavigate();
   useEffect(() => {
-    fetchData();
+    if (localStorage.getItem("authTokens")) {
+      fetchData();
+    }
   }, []);
   const [command, setCommand] = useState<(slug: string) => void>(() => {});
   const [type, setType] = useState<ConstantType>(BUANG);
@@ -107,19 +117,18 @@ const DashboardPosts = () => {
     setOpen((prev) => !prev);
     setSlug(slug);
     setType(type);
-
     setCommand(func);
   };
 
   return (
-    <div className={`m-[10px_20px_0_16px] h-auto min-h-[100%] relative text-[#3c434a] text-[13px] leading-[1.4em] min-w-[600px] `}>
+    <main>
       <DashboardModal type={type!} slug={slug} command={command} />
 
       <div className="flex justify-between">
         <div>
           <div className="flex flex-row items-center">
             <h2 className="text-2xl inline-block mr-[5px]">Posts</h2>
-            <Link to="/posts/create">
+            <Link to="/dashboard/posts/create">
               <span className="border border-[#cc62ce] inline-block p-[4px_8px] text-[#cc62ce] font-semibold rounded-sm">Add New</span>
             </Link>
           </div>
@@ -134,7 +143,7 @@ const DashboardPosts = () => {
                       })
                     )
                   : setFilteredPosts(posts);
-                search ? navigate(`/posts/?search=${search}`) : navigate("/posts/");
+                search ? navigate(`/dashboard/posts/?search=${search}`) : navigate("/dashboard/posts/");
               }}
             >
               All ({search ? posts!.filter((post) => post.title.toLowerCase().includes(search)).length : posts!.length})
@@ -144,7 +153,7 @@ const DashboardPosts = () => {
               className="text-blue-700 cursor-pointer"
               onClick={() => {
                 search ? setFilteredPosts(posts!.filter((post) => post.status == "draft" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "draft"));
-                search ? navigate(`/posts/?status=draft&search=${search}`) : navigate("/posts/?status=draft");
+                search ? navigate(`/dashboard/posts/?status=draft&search=${search}`) : navigate("/dashboard/posts/?status=draft");
               }}
             >
               Draft (
@@ -160,7 +169,7 @@ const DashboardPosts = () => {
               className="text-blue-700 cursor-pointer"
               onClick={() => {
                 search ? setFilteredPosts(posts!.filter((post) => post.status == "published" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "published"));
-                search ? navigate(`/posts/?status=published&search=${search}`) : navigate("/posts/?status=published");
+                search ? navigate(`/dashboard/posts/?status=published&search=${search}`) : navigate("/dashboard/posts/?status=published");
               }}
             >
               Published (
@@ -176,7 +185,7 @@ const DashboardPosts = () => {
               className="text-blue-700 cursor-pointer"
               onClick={() => {
                 search ? setFilteredPosts(posts!.filter((post) => post.status == "trash" && post.title.toLowerCase().includes(search.toLowerCase()))) : setFilteredPosts(posts!.filter((post) => post.status == "trash"));
-                search ? navigate(`/posts/?status=trash&search=${search}`) : navigate("/posts/?status=trash");
+                search ? navigate(`/dashboard/posts/?status=trash&search=${search}`) : navigate("/dashboard/posts/?status=trash");
               }}
             >
               Trash (
@@ -202,7 +211,7 @@ const DashboardPosts = () => {
                     return post.title.toLowerCase().includes(e.target.value.toLowerCase());
                   })
                 );
-                status ? navigate(`/posts/?search=${e.target.value}&status=${status}`) : navigate("/posts/?search=" + e.target.value);
+                status ? navigate(`/dashboard/posts/?search=${e.target.value}&status=${status}`) : navigate("/dashboard/posts/?search=" + e.target.value);
               }}
             />
             <BsSearch className="absolute top-1/2 -translate-y-1/2 left-3" />
@@ -226,7 +235,10 @@ const DashboardPosts = () => {
         <h3 className="font-semibold text-lg">Keterangan :</h3>
         <ul className="flex flex-col gap-y-2 mt-4">
           <li className="flex flex-row gap-x-3 items-center">
-            <BsTrash className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible" />:<span>Delete</span>
+            <BsTrash className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible" />:<span>Buang</span>
+          </li>
+          <li className="flex flex-row gap-x-3 items-center">
+            <MdDeleteForever className="p-1 rounded-lg text-2xl text-white flex justify-center items-center hover:text-[rgb(0,0,0)] bg-[rgb(220,53,69)] overflow-visible" />:<span>Hapus Permanen</span>
           </li>
           <li className="flex flex-row gap-x-3 items-center">
             <AiOutlineEye className="p-1 rounded-lg justify-center items-center text-white text-2xl bg-[rgb(13,202,240)] hover:text-[rgb(0,0,0)]  overflow-visible" />:<span>View</span>
@@ -236,7 +248,8 @@ const DashboardPosts = () => {
           </li>
         </ul>
       </div>
-    </div>
+      <button onClick={() => window.open("http://127.0.0.1:8000/api/category/create", "Popup", "width=400,height=400")}>gege</button>
+    </main>
   );
 };
 

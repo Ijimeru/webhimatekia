@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import useAxios from "../hook/useAxios";
 import { AuthTokensType } from "../types/AuthTypes";
-import useAxios from "../utils/useAxios";
-import { AuthContext } from "../context/AuthContext";
 
 interface props {
   component: React.ReactNode;

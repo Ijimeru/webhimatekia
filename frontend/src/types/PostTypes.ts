@@ -26,10 +26,19 @@ export interface DashboardPostContextType {
   publishData(slug: string): void;
   unPublishData(slug: string): void;
   recycleData(slug: string): void;
+  deleteData(slug: string): void;
 }
 
 export interface ConstantType {
   text: string;
   btext: string;
   color: string;
+}
+export interface CheckBoxOption {
+  label: string;
+}
+
+export interface CheckBoxProp {
+  options: CheckBoxOption[];
+  setSelectedOptions: React.Dispatch<React.SetStateAction<CheckBoxProp["options"]>>;
 }

@@ -49,9 +49,9 @@ class Post(models.Model):
     title = models.CharField(max_length=100)
     slug = AutoSlugField(populate_from='title')  # type: ignore
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    publisher = models.CharField(max_length=100)
     kategori = models.ManyToManyField(Category)
     content = models.TextField()
+    hero_img = models.ImageField(upload_to="post/image", blank=True)
     STATUS = [
         ('draft', 'Draft'),
         ('published', 'Published'),

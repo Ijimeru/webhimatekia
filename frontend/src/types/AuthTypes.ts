@@ -2,6 +2,7 @@ export interface User {
   username: string;
   email: string;
   nim: string;
+  user_id: number;
 }
 export interface AuthTokensType {
   access: string | undefined;

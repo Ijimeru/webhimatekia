@@ -9,6 +9,6 @@ urlpatterns = [
     path('activated', index, name="activated"),
     path('activate-failed', index, name="activate-failed"),
     path('dashboard/', index),
-    path('posts/', index),
-    path('new-posts/', index)
+    path('dashboard/posts/', index),
+    path('dashboard/posts/create/', index)
 ]

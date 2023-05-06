@@ -1,5 +1,4 @@
 const path = require("path");
-
 module.exports = {
   entry: "./src/index.tsx",
   output: {
@@ -18,7 +17,19 @@ module.exports = {
       },
       {
         test: /\.css$/i,
-        use: ["style-loader", "css-loader", "postcss-loader"],
+        use: [
+          "style-loader",
+          "css-loader",
+          "postcss-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: [require("tailwindcss"), require("autoprefixer")],
+              },
+            },
+          },
+        ],
       },
     ],
   },

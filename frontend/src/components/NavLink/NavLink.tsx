@@ -5,7 +5,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { GrClose } from "react-icons/gr";
 import { AiOutlinePlus, AiOutlineMinus } from "react-icons/ai";
 import { AuthContext } from "../../context/AuthContext";
-import { useWindowSize } from "../../utils/useWindowSize";
+import { useWindowSize } from "../../hook/useWindowSize";
 export default function NavLink() {
   const NavList: {
     name: string;
